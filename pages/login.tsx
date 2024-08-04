@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import { Console } from 'console';
 
-export default function Register() {
+export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const response = await fetch('http://localhost:8080/api/users/auth/register', {
+    const response = await fetch('http://localhost:8080/api/users/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -17,18 +18,16 @@ export default function Register() {
 
     if (response.ok) {
       console.log("Response : ", response);
-      const data = await response.json();
-      console.log("Register successful..!");
-      console.log("Got Data: ", data);
+      console.log("User logged in successfully ")
     } else {
-      alert('Register failed');
+      alert('Login failed');
     }
   };
 
   return (
     <div>
-      <h2>Register</h2>
-      <form onSubmit={handleRegister}>
+      <h2>SignIn</h2>
+      <form onSubmit={handleLogin}>
         <input
           type="text"
           value={username}
@@ -43,7 +42,7 @@ export default function Register() {
           placeholder="Password"
           required
         />
-        <button type="submit">SignUp</button>
+        <button type="submit">SignIn</button>
       </form>
     </div>
   );
