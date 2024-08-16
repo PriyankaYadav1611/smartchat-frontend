@@ -2,28 +2,28 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
+import { setSocket } from './store/websocketSlice';
 
 export default function Chat() {
     const dispatch = useDispatch();
     const { token, isAuthenticated } = useSelector((state) => state.auth);
+    const { socket, isConnected, stompClient } = useSelector((state) => state.websocket);
     const username = useSelector((state) => state.me.username);
 
-
-
-    const [socket, setSocket] = useState(null);
-    const [stompClient, setStompClient] = useState(null);
     const [content, setContent] = useState('');
     const [recipient, setRecipient] = useState('');
 
     useEffect(() => {
         if (isAuthenticated) {
+            
             const socket = new SockJS('http://localhost:8080/ws');
-            const stompClient = Stomp.over(socket);
-            setSocket(socket);
-            setStompClient(stompClient);
-
+            
+            const stompClient = Stomp.over(() => {
+                return new SockJS('http://localhost:8080/ws')
+              });
+            
             stompClient.connect({}, (frame) => {
-                console.log('Connected: ' + frame);
+                dispatch(setSocket({socket: socket, stompClient: stompClient}));
                 stompClient.subscribe(`/user/${username}/queue/messages`, (message) => {
                     console.log("got msg..", JSON.parse(message.body));
                 });

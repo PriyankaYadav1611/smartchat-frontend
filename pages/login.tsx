@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux';
 
-import { setToken } from './authSlice';
-import { setUsername } from './meSlice';
+import { setToken } from './store/authSlice';
+import { setUsername } from './store/meSlice';
 
 
 export default function Login() {
@@ -32,6 +32,7 @@ export default function Login() {
 
             console.log("response data", data);
             dispatch(setToken(data.token));
+
             router.push('/chat');
         } else {
             alert('Login failed');
