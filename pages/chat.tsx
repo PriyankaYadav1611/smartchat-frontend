@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
-import { setSocket } from './store/websocketSlice';
+import { setSocket } from '../store/websocketSlice';
 
 export default function Chat() {
     const dispatch = useDispatch();

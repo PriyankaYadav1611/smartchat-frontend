@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux';
 
-import { setToken } from './store/authSlice';
-import { setUsername } from './store/meSlice';
+import { setToken } from '../store/authSlice';
+import { setUsername } from '../store/meSlice';
 
 
 export default function Login() {
