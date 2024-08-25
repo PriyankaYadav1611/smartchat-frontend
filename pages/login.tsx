@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -13,7 +13,6 @@ export default function Login() {
     const username = useSelector((state) => state.me.username);
     const [password, setPassword] = useState('');
 
-
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const response = await fetch('http://localhost:8080/api/users/auth/login', {
@@ -27,10 +26,8 @@ export default function Login() {
         if (response.ok) {
             const data = await response.json();
 
-            console.log("Response : ", response);
-            console.log("User logged in successfully")
-
-            console.log("response data", data);
+            console.log(" User logged in successfully = Response : ", response);
+            localStorage.setItem("token", data.token);
             dispatch(setToken(data.token));
 
             router.push('/chat');
