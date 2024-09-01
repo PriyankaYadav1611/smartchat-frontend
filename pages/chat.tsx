@@ -7,18 +7,19 @@ import { setSocket } from '../store/websocketSlice';
 import { setToken } from '../store/authSlice';
 import { setUsername } from '../store/meSlice';
 import axios from 'axios';
+import { setGroups } from '@/store/groupSlice';
 
 export default function Chat() {
     const dispatch = useDispatch();
     const router = useRouter();
+
     const { token, isAuthenticated } = useSelector((state) => state.auth);
     const { socket, isConnected, stompClient } = useSelector((state) => state.websocket);
     const username = useSelector((state) => state.me.username);
+    const groups = useSelector((state) => state.group.groups);
 
     const [content, setContent] = useState('');
     const [recipient, setRecipient] = useState('');
-
-
 
     useEffect(() => {
         console.log("Chat page useeffect called ..................");
@@ -34,43 +35,42 @@ export default function Chat() {
             }
             // token is present, check token validity
             getMe();
-
         }
     }, []);
 
+
     useEffect(() => {
         if (isAuthenticated) {
+            getAllGroups();
             const socket = new SockJS('http://localhost:8080/ws');
             
             const stompClient = Stomp.over(() => {
                 return new SockJS('http://localhost:8080/ws')
               });
             
-              
             stompClient.connect({Authorization: `Bearer ${localStorage.getItem("token")}`}, (frame) => {
                 console.log("Chat page useeffect websocket connected ..................");
                 dispatch(setSocket({socket: socket, stompClient: stompClient}));
                 console.log("Going to subscribe ...");
-                if (username) {
-                    // stompClient.subscribe(`/user/${username}/queue/messages`, (message) => {
-                    //     console.log("got msg..", JSON.parse(message.body));
-                    // });
-
-                    stompClient.subscribe(`/user/${username}/queue/messages/groups/26`, (message) => {
-                        // renderMessage(grouId, messageContent, senderId);
-                        console.log("got msg..", JSON.parse(message.body));
-                    });
-                } else {
-                    console.log("username is null, cann't subscribe without a valid username!");
-                }
             });
         }
     }, [isAuthenticated])
 
 
+    useEffect (() => {
+        if (username && stompClient && groups) {
+            groups.forEach(group => {
+                stompClient.subscribe(`/user/${"groupId-" + group.id}/queue/messages/groups`, (message) => {
+                    console.log("got msg..", JSON.parse(message.body));
+                });        
+            });
+        } else {
+            console.log("username is null, cann't subscribe without a valid username!");
+        }
+    },[stompClient, groups, username])
+
     const sendMessage = () => {
         console.log("Chat page inside send message..................");
-        
         if (socket && content.trim() && recipient.trim()) {
             const message = JSON.stringify({ 'senderId': 9, 'groupId': 27, 'content': content });
             stompClient.send("/app/chat.sendMessage", {}, message);
@@ -99,25 +99,19 @@ export default function Chat() {
             router.push("/login");
         }
 
-        // let data = '';
+    }
 
-        // let config = {
-        //   method: 'get',
-        //   maxBodyLength: Infinity,
-        //   url: 'http://localhost:8080/api/users/debug/auth',
-        //   headers: { 
-        //     'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0IiwiaWF0IjoxNzIzOTY4OTY3LCJleHAiOjE3MjQwMDQ5Njd9.dMG4LS3NFnMYPlWN-M21LfNmzbSrA8foKf46rUR16eA'
-        //   },
-        //   data : data
-        // };
-        
-        // axios.request(config)
-        // .then((response) => {
-        //   console.log(JSON.stringify(response.data));
-        // })
-        // .catch((error) => {
-        //   console.log("debug axios err", error);
-        // });
+    async function getAllGroups(){
+        const localToken = localStorage.getItem('token');
+        const response = await axios({ 
+            method: 'get',
+            url: 'http://localhost:8080/api/users/groups',
+            headers : {
+                'Authorization': 'Bearer ' + localToken,
+            },
+        });
+        dispatch(setGroups({groups: response.data}))
+        console.log("Get All Groups: ", response);
     }
 
     return (
