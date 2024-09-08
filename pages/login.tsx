@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux';
 
 import { setToken } from '../store/authSlice';
-import { setUsername } from '../store/meSlice';
+import { setMe } from '../store/meSlice';
 
 
 export default function Login() {
@@ -43,7 +43,7 @@ export default function Login() {
                 <input
                     type="text"
                     value={username}
-                    onChange={(e) => dispatch(setUsername({ username: e.target.value }))}
+                    onChange={(e) => dispatch(setMe({ username: e.target.value }))}
                     placeholder="Username"
                     required
                 />
