@@ -9,10 +9,10 @@ import { setGroups, setSelectedGroup } from '@/store/groupSlice';
 import { setIdUserMap } from '../store/usersSlice';
 import { setGroupIdMessagesMap,setMessage } from '@/store/messagesSlice';
 
-import { connectStomp, reconnectStomp } from '../api/stomp'
-import { getMe, getAllUsers } from '../api/users'
-
-
+import { connectStomp, reconnectStomp } from '../api/stomp';
+import { getMe, getAllUsers } from '../api/users';
+import { getAllGroups } from '../api/groups';
+import { getMessagesByGroupId } from '../api/messages';
 
 import styles from '../styles/Chat.module.css';
 
@@ -53,7 +53,7 @@ export default function Chat() {
     useEffect(() => {
         if (isAuthenticated) {
             // get and set all groups for this user and all group's all messages
-            getAllGroups();
+            getAndSetAllGroups();
 
             // get and set all group's all users
             getAndSetAllUsers();
@@ -109,27 +109,19 @@ export default function Chat() {
             localStorage.removeItem("token");
             router.push("/login");
         }
-
     }
 
-    async function getAllGroups() {
-        const localToken = localStorage.getItem('token');
-        const response = await axios({
-            method: 'get',
-            url: 'http://localhost:8080/api/users/groups',
-            headers: {
-                'Authorization': 'Bearer ' + localToken,
-            },
-        });
-        dispatch(setGroups({ groups: response.data }));
-        console.log("Get All Groups: ", response);
-        console.log("-----------------------------------" + response.data);
-        
-        // get and store all messages for each group
-        const groups = response.data;
-        groups.forEach(group => {
-            getMessagesByGroupId(group.id);
-        });
+    async function getAndSetAllGroups() {
+        try {
+            const groups = await getAllGroups();
+            dispatch(setGroups({ groups: groups }));
+            // get and store all messages for each group
+            groups.forEach(group => {
+                getAndSetMessagesByGroupId(group.id);
+            });
+        } catch (error) {
+            console.error("getAllGroups err:", error);
+        }
     }
 
     const getAndSetAllUsers = async () => {
@@ -143,8 +135,7 @@ export default function Chat() {
         } catch(error) {
             console.error("getAllUsers err:", error);
         }
-
-    }    
+    }
 
 
     const handleGroupClick = (group) => {
@@ -154,25 +145,20 @@ export default function Chat() {
 
     // Function to call get API to get all messages for given group
     // and set global store accordingly
-    const getMessagesByGroupId = async (groupId) => {
+    const getAndSetMessagesByGroupId = async (groupId) => {
         // call get call to get all messages for this groupId
         // set the messages to global store
-        const localToken = localStorage.getItem('token');
-        const response = await axios({
-            method: 'get',
-            url: `http://localhost:8080/api/groups/${groupId}/messages`,
-            headers: {
-                'Authorization': 'Bearer ' + localToken,
-            },
-        });
+        try {
+            const messages = await getMessagesByGroupId(groupId);
+            console.log(`message for groupId: ${groupId}, are: ${messages}`);
 
-        const messages = response.data;
-        console.log(`message for groupId: ${groupId}, are: ${messages}`);
-
-        // set messages in store
-        const groupIdMessagesMap = {};
-        groupIdMessagesMap[groupId] = messages;
-        dispatch(setGroupIdMessagesMap({groupIdMessagesMap: groupIdMessagesMap}));
+            // set messages in store
+            const groupIdMessagesMap = {};
+            groupIdMessagesMap[groupId] = messages;
+            dispatch(setGroupIdMessagesMap({groupIdMessagesMap: groupIdMessagesMap}));
+        } catch (error) {
+            console.error("getMessagesByGroupId err:", error);
+        }
     }
 // ------------------------------------------------------------------------------------------------------------------------------------------------------
 const handleConnected = (socket, stompClient) => {
@@ -236,30 +222,32 @@ const handleReceivedMessage = (newMessage) => {
                                         )    
                                 }</h3>
                             </div>
-
-
                             <div className={styles.chatMessages}>
-                            {sortedMessages.length > 0 ? (
-                                sortedMessages.map((message, index) => (
-                                    <div
-                                        key={index}
-                                        className={`${styles.message} ${message.senderId == me.id? styles.sent : styles.received}`}
-                                    >
-                                        <div
-                                        className={`${styles.messageContent} ${message.senderId == me.id ? styles.sentMessage : styles.receivedMessage}`}
-                                        >
-                                        <strong>{message.sender}</strong>{message.content}
-                                        </div>
-                                    </div>
-                                    ))
-                                ) : (
-                                    <div>Select a group to view messages</div>
-                                )}
+                                {
+                                    sortedMessages.length > 0 ?
+                                    (
+                                        sortedMessages.map((message, index) => (
+                                            <div
+                                                key={index}
+                                                className={`${styles.message} ${message.senderId == me.id? styles.sent : styles.received}`}
+                                            >
+                                                <div
+                                                    className={`${styles.messageContent} ${message.senderId == me.id ? styles.sentMessage : styles.receivedMessage}`}
+                                                >
+                                                    <strong>{message.sender}</strong>{message.content}
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) :
+                                    (
+                                        <div>Select a group to view messages</div>
+                                    )
+                                }
                             </div>
 
                             <div className={styles.chatInput}>
                                 <input type="text" placeholder="Type a message..." value={content}
-                                    onChange={(e) => setContent(e.target.value)} />
+                                       onChange={(e) => setContent(e.target.value)} />
                                 <button onClick={sendMessage}>Send</button>
                             </div>
                         </>
@@ -270,7 +258,6 @@ const handleReceivedMessage = (newMessage) => {
                     )}
                 </div>
             </div>
-
         </div>
     );
 }

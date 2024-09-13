@@ -7,7 +7,7 @@ export async function getMe() {
     try {
         const response = await axios({
             method: 'get',
-            url: 'http://localhost:8080/api/users/me',
+            url: `${BASE_URL}/api/users/me`,
             headers: {
                 'Authorization': 'Bearer ' + localToken,
             },
@@ -31,7 +31,7 @@ export async function getAllUsers() {
     try {
         const response = await axios({
             method: 'get',
-            url: 'http://localhost:8080/api/groups/users',
+            url: `${BASE_URL}/api/groups/users`,
             headers: {
                 'Authorization': 'Bearer ' + localToken,
             },
