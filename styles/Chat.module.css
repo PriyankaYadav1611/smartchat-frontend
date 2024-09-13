@@ -99,14 +99,29 @@
     padding: 5px;
     border-radius: 5px;
     margin-bottom: 10px;
+    margin-right: 20px;
+    display: inline-block;
+    max-width: 60%; /* Limit the message box width */
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 14px;
+    word-wrap: break-word; /* Ensure long words break into the next line */
+    background-color: #dcf8c6; /* Light green background for sent messages */
+    color: #000; /* Text color */
+    margin-left: 50%;
   }
   
   .received {
     text-align: left;
     background-color: #f1f0f0;
     padding: 5px;
-    border-radius: 5px;
+    display: inline-block;
+    max-width: 60%; /* Limit the message box width */
+    padding: 10px;
+    border-radius: 10px;
     margin-bottom: 10px;
+    font-size: 14px;
+    word-wrap: break-word;    
   }
   
   .chatInput {
@@ -140,6 +155,48 @@
   .container {
   display: flex;
   height: 100vh;
+
+  .chatMessages {
+    flex-grow: 1;
+    padding: 20px;
+    background-color: #fff;
+    overflow-y: auto;
+  }
+  
+  .message {
+    display: flex;
+    margin-bottom: 10px;
+  }
+  
+  .sent {
+    justify-content: flex-end; /* Align to the right for sender */
+  }
+  
+  .received {
+    justify-content: flex-start; /* Align to the left for receiver */
+  }
+  
+  .messageContent {
+    display: inline-block;
+    max-width: 60%; /* Limit the message box width */
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    word-wrap: break-word; /* Ensure long words break into the next line */
+    background-color: #dcf8c6; /* Light green background for sent messages */
+    color: #000; /* Text color */
+  }
+  
+  .sentMessage {
+    background-color: #dcf8c6; /* Light green background for sent messages */
+    text-align: right; /* Text alignment for sent messages */
+  }
+  
+  .receivedMessage {
+    background-color: #f1f0f0; /* Light gray background for received messages */
+    text-align: left; /* Text alignment for received messages */
+  }
 }
 
 .chatWindow {
@@ -148,36 +205,6 @@
   flex-direction: column;
 }
 
-
-
-.message {
-  display: flex;
-  margin-bottom: 10px;
-}
-
-.sent {
-  justify-content: flex-end; /* Align to the right for sender */
-}
-
-.received {
-  justify-content: flex-start; /* Align to the left for receiver */
-}
-
-.messageContent {
-  max-width: 60%;
-  padding: 10px;
-  border-radius: 10px;
-  margin-bottom: 10px;
-  font-size: 14px;
-}
-
-.sentMessage {
-  background-color: #dcf8c6; /* Light green background for sent messages */
-}
-
-.receivedMessage {
-  background-color: #f1f0f0; /* Light gray background for received messages */
-}
 
 .chatInput {
   display: flex;
@@ -207,4 +234,3 @@
   background-color: #006bbf;
 }
 
-  

@@ -4,7 +4,8 @@ import authReducer from './authSlice';
 import websocketReducer from './websocketSlice';
 import meReducer from './meSlice';
 import groupReducer from './groupSlice';
-import usersReducer from './usersSlice'
+import usersReducer from './usersSlice';
+import messagesReducer from './messagesSlice';
 
 export const store = configureStore ({
     reducer: {
@@ -12,7 +13,8 @@ export const store = configureStore ({
         websocket: websocketReducer,
         me: meReducer,
         group: groupReducer,
-        users: usersReducer
+        users: usersReducer,
+        messages: messagesReducer,
     },
     middleware: getDefaultMiddleware =>
         getDefaultMiddleware ({
