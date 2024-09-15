@@ -2,7 +2,7 @@ import axios from 'axios';
 import {BASE_URL} from './constants';
 
 
-export async function getAllGroups() {
+export async function getAllRelevantGroups() {
     const localToken = localStorage.getItem('token');
     try {
         const response = await axios({

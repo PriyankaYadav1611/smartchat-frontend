@@ -26,12 +26,31 @@ export async function getMe() {
 
 }
 
-export async function getAllUsers() {
+export async function getAllReleventUsers() {
     const localToken = localStorage.getItem('token');
     try {
         const response = await axios({
             method: 'get',
             url: `${BASE_URL}/api/groups/users`,
+            headers: {
+                'Authorization': 'Bearer ' + localToken,
+            },
+        });
+
+        const users = response.data;
+        return users;
+    } catch (error) {
+        console.error("getAllUsers err:", error);
+        throw error;
+    }
+}
+
+export async function getAllUsers() {
+    const localToken = localStorage.getItem('token');
+    try {
+        const response = await axios({
+            method: 'get',
+            url: `${BASE_URL}/api/users`,
             headers: {
                 'Authorization': 'Bearer ' + localToken,
             },

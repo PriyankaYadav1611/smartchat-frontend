@@ -5,16 +5,17 @@ import { setSocket, clearSocket } from '../store/websocketSlice';
 import { setToken } from '../store/authSlice';
 import { getAndSetMe } from '../store/meSlice';
 import { setGroups, setSelectedGroup } from '@/store/groupSlice';
-import { setIdUserMap } from '../store/usersSlice';
+import { setUsersAndIdUserMap } from '../store/usersSlice';
 import { setGroupIdMessagesMap,setMessage } from '@/store/messagesSlice';
 
 import { RootState } from '../store';
 import { connectStomp, reconnectStomp } from '../api/stomp';
 import { getMe, getAllUsers } from '../api/users';
-import { getAllGroups } from '../api/groups';
+import { getAllRelevantGroups } from '../api/groups';
 import { getMessagesByGroupId } from '../api/messages';
 
 import styles from '../styles/Chat.module.css';
+import ChatPopup from '../components/ChatPopup';
 
 
 export default function Chat() {
@@ -27,7 +28,7 @@ export default function Chat() {
     const { me, isLoading: isGettingMe, error: getMeError} = useSelector((state: RootState) => state.me);
     const groups = useSelector((state: RootState) => state.group.groups);
     const selectedGroup = useSelector((state: RootState) => state.group.selectedGroup);
-    const idUserMap = useSelector((state: RootState) => state.users.idUserMap);
+    const { idUserMap, users } = useSelector((state: RootState) => state.users);
     const groupIdMessagesMap = useSelector((state: RootState) => state.messages.groupIdMessagesMap);
 
     const [content, setContent] = useState('');
@@ -58,7 +59,7 @@ export default function Chat() {
     useEffect(() => {
         if (me) {
             // get and set all groups for this user and all group's all messages
-            getAndSetAllGroups();
+            getAndSetAllRelevantGroups();
 
             // get and set all group's all users
             getAndSetAllUsers();
@@ -100,9 +101,9 @@ export default function Chat() {
     };
 
 
-    async function getAndSetAllGroups() {
+    async function getAndSetAllRelevantGroups() {
         try {
-            const groups = await getAllGroups();
+            const groups = await getAllRelevantGroups();
             dispatch(setGroups({ groups: groups }));
             // get and store all messages for each group
             groups.forEach(group => {
@@ -120,7 +121,7 @@ export default function Chat() {
             users.forEach(user => {
                 idUserMap[parseInt(user.id)] = user;
             });
-            dispatch(setIdUserMap({ idUserMap: idUserMap }))
+            dispatch(setUsersAndIdUserMap({ users: users, idUserMap: idUserMap }))
         } catch(error) {
             console.error("getAllUsers err:", error);
         }
@@ -171,7 +172,7 @@ export default function Chat() {
     const sortedMessages = selectedGroup?.id && groupIdMessagesMap[selectedGroup.id] ? groupIdMessagesMap[selectedGroup.id].slice().sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime()) : [];
     
     
-    if (isGettingMe || (!(groups?.length)) || !idUserMap) {
+    if (!me || isGettingMe || !users || (!(groups?.length)) || !idUserMap) {
         return (
             <div>
                 Loading...
@@ -184,7 +185,7 @@ export default function Chat() {
             <div className={styles.container}>
                 <div className={styles.sidebar}>
                     <h2>Chat App</h2>
-                    <h3> New Chat</h3>
+                    {users ? <ChatPopup users={users} /> : ""}
                     <ul>
                         {groups.map((group) => (
                             <li
