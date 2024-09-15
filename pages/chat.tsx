@@ -3,12 +3,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation'
 import { setSocket, clearSocket } from '../store/websocketSlice';
 import { setToken } from '../store/authSlice';
-import { setMe } from '../store/meSlice';
-import axios from 'axios';
+import { getAndSetMe } from '../store/meSlice';
 import { setGroups, setSelectedGroup } from '@/store/groupSlice';
 import { setIdUserMap } from '../store/usersSlice';
 import { setGroupIdMessagesMap,setMessage } from '@/store/messagesSlice';
 
+import { RootState } from '../store';
 import { connectStomp, reconnectStomp } from '../api/stomp';
 import { getMe, getAllUsers } from '../api/users';
 import { getAllGroups } from '../api/groups';
@@ -21,21 +21,26 @@ export default function Chat() {
     const dispatch = useDispatch();
     const router = useRouter();
 
-    const { token, isAuthenticated } = useSelector((state) => state.auth);
-    const { socket, isConnected, stompClient } = useSelector((state) => state.websocket);
-    const me = useSelector((state) => state.me);
-    const groups = useSelector((state) => state.group.groups);
-    const selectedGroup = useSelector((state) => state.group.selectedGroup);
-    const idUserMap = useSelector((state) => state.users.idUserMap);
-    const groupIdMessagesMap = useSelector((state) => state.messages.groupIdMessagesMap);
+    const { token, isAuthenticated } = useSelector((state: RootState) => state.auth);
+    const { socket, isConnected, stompClient } = useSelector((state: RootState) => state.websocket);
+    // const me = useSelector((state: RootState) => state.me);
+    const { me, isLoading: isGettingMe, error: getMeError} = useSelector((state: RootState) => state.me);
+    const groups = useSelector((state: RootState) => state.group.groups);
+    const selectedGroup = useSelector((state: RootState) => state.group.selectedGroup);
+    const idUserMap = useSelector((state: RootState) => state.users.idUserMap);
+    const groupIdMessagesMap = useSelector((state: RootState) => state.messages.groupIdMessagesMap);
 
     const [content, setContent] = useState('');
 
 
 
+
+
     useEffect(() => {
         console.log("Chat page useeffect called ..................");
-        if (!isAuthenticated) {
+        if (getMeError) {
+            router.push('/login');
+        } else if (!me) {
             // User is not authenticated
             // check if token is present in localStorage
             const localToken = localStorage.getItem("token");
@@ -45,13 +50,13 @@ export default function Chat() {
                 router.push("/login");
             }
             // token is present, check token validity
-            getAndSetMe();
+            dispatch(getAndSetMe());
         }
-    }, []);
+    }, [dispatch, me]);
 
 
     useEffect(() => {
-        if (isAuthenticated) {
+        if (me) {
             // get and set all groups for this user and all group's all messages
             getAndSetAllGroups();
 
@@ -61,12 +66,12 @@ export default function Chat() {
             // connet to STOMP
             connectStomp(handleReceivedMessage, handleConnected, handleError);
         }
-    }, [isAuthenticated])
+    }, [me])
 
 
     useEffect(() => {
         console.log("Going to subscribe all groups")
-        if (me.username && stompClient && groups) {
+        if (me?.username && stompClient && groups) {
             console.log("Inside if: Going to subscribe all groups");
             groups.forEach(group => {
                 stompClient.subscribe(`/user/${"groupId-" + group.id}/queue/messages/groups`, (message) => {
@@ -78,12 +83,8 @@ export default function Chat() {
         } else {
             console.log("(me.username && stompClient && groups) is false: stompClient:", stompClient);
         }
-    }, [stompClient, groups, me.username])
+    }, [stompClient, groups, me])
 
-
-    useEffect(() => {
-        console.log("GroupIdMessageMap:", groupIdMessagesMap);
-    }, [groupIdMessagesMap])
 
     const sendMessage = () => {
         console.log("Chat page inside send message..................");
@@ -98,18 +99,6 @@ export default function Chat() {
         }
     };
 
-    const getAndSetMe = async () => {
-        try {
-            const localToken = localStorage.getItem('token');
-            const me = await getMe();
-            dispatch(setMe(me));
-            dispatch(setToken(localToken))
-        } catch(error) {
-            console.error("Get me err:", error);
-            localStorage.removeItem("token");
-            router.push("/login");
-        }
-    }
 
     async function getAndSetAllGroups() {
         try {
@@ -160,34 +149,42 @@ export default function Chat() {
             console.error("getMessagesByGroupId err:", error);
         }
     }
-// ------------------------------------------------------------------------------------------------------------------------------------------------------
-const handleConnected = (socket, stompClient) => {
-    console.log("Handle connected called");
-    dispatch(setSocket({ socket: socket, stompClient: stompClient }));
-    console.log('STOMP connected successfully');
-};
+    // ------------------------------------------------------------------------------------------------------------------------------------------------------
+    const handleConnected = (socket, stompClient) => {
+        console.log("Handle connected called");
+        dispatch(setSocket({ socket: socket, stompClient: stompClient }));
+        console.log('STOMP connected successfully');
+    };
 
-// Function to handle errors
-const handleError = (error) => {
-console.log('STOMP connection error:', error);
-dispatch(clearSocket());
-reconnectStomp(handleReceivedMessage, handleConnected, handleError); // Attempt reconnection
-};
+    // Function to handle errors
+    const handleError = (error) => {
+    console.log('STOMP connection error:', error);
+    dispatch(clearSocket());
+    reconnectStomp(handleReceivedMessage, handleConnected, handleError); // Attempt reconnection
+    };
 
-// Function to handle received messages
-const handleReceivedMessage = (newMessage) => {
-//setMessagess((prevMessages) => [...prevMessages, newMessage]);
-    dispatch(setMessage({message: newMessage}));
-};
+    // Function to handle received messages
+    const handleReceivedMessage = (newMessage) => {
+        dispatch(setMessage({message: newMessage}));
+    };
 
+    const sortedMessages = selectedGroup?.id && groupIdMessagesMap[selectedGroup.id] ? groupIdMessagesMap[selectedGroup.id].slice().sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime()) : [];
+    
+    
+    if (isGettingMe || (!(groups?.length)) || !idUserMap) {
+        return (
+            <div>
+                Loading...
+            </div>
+        )
+    }
 
-    const sortedMessages = selectedGroup?.id && groupIdMessagesMap[selectedGroup.id] ? groupIdMessagesMap[selectedGroup.id].slice().sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime())
-    : [];
     return (
         <div>
             <div className={styles.container}>
                 <div className={styles.sidebar}>
-                    <h2>groups</h2>
+                    <h2>Chat App</h2>
+                    <h3> New Chat</h3>
                     <ul>
                         {groups.map((group) => (
                             <li
@@ -240,7 +237,7 @@ const handleReceivedMessage = (newMessage) => {
                                         ))
                                     ) :
                                     (
-                                        <div>Select a group to view messages</div>
+                                        <div>No messages, start chatting...</div>
                                     )
                                 }
                             </div>

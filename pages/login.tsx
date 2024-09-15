@@ -3,14 +3,13 @@ import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux';
 
 import { setToken } from '../store/authSlice';
-import { setMe } from '../store/meSlice';
 
 
 export default function Login() {
     const router = useRouter();
     const dispatch = useDispatch();
 
-    const username = useSelector((state) => state.me.username);
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -43,7 +42,7 @@ export default function Login() {
                 <input
                     type="text"
                     value={username}
-                    onChange={(e) => dispatch(setMe({ username: e.target.value }))}
+                    onChange={(e) => setUsername(e.target.value)}
                     placeholder="Username"
                     required
                 />
