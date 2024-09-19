@@ -6,11 +6,13 @@ import { getMe } from '../api/users'
 export const getAndSetMe = createAsyncThunk(
   'me/getAndSetMe',
   async (_, { rejectWithValue }) => {
+    console.log("Inside getAndSetMe createAsyncThunk")
     try {
-        const me = getMe();
+        const me = await getMe();
         return me;
     } catch (error: any) {
-        return rejectWithValue("getMe failed");
+      console.log("Inside getAndSetMe createAsyncThunk error:", error);
+        return rejectWithValue(error);
     }
   }
 );

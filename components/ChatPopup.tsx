@@ -1,34 +1,68 @@
 import React, { useState } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, Checkbox, ListItemText } from '@mui/material';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Checkbox,
+  ListItemText,
+  TextField
+} from '@mui/material';
+import { useDispatch, useSelector } from 'react-redux';
+
+
+import { createNewGroup } from '../api/groups';
+import { addGroup } from '../store/groupSlice';
+
 
 const ChatPopup = ({ users }: { users: { id: number, username: string }[] }) => {
+  const dispatch = useDispatch();
+
   const [open, setOpen] = useState(false);
   const [chatType, setChatType] = useState<string>(''); // Group or 1:1
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]); // For group chat
+  const [groupTitle, setGroupTitle] = useState<string>(''); // New field for group title
+  const { me, isLoading: isGettingMe, error: getMeError} = useSelector((state: RootState) => state.me);
 
-  // Open or close modal
   const handleClickOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
-  // Handle chat type selection
-  const handleChatTypeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setChatType(event.target.value as string);
-    setSelectedUsers([]); // Clear users selection when switching
+  const handleClose = () => {
+    setOpen(false);
+    setChatType('');
+    setSelectedUsers([]);
+    setGroupTitle('');
   };
 
-  // Handle selecting users for group chat
+  const handleChatTypeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setChatType(event.target.value as string);
+    setSelectedUsers([]); // Clear user selection when switching
+  };
+
   const handleUserSelection = (event: any) => {
     const value = event.target.value as number[];
     setSelectedUsers(value);
   };
 
-  const handleStartChat = () => {
-    // Logic to start chat based on selected chatType and selectedUsers
+  const handleStartChat = async() => {
+    let groupType = 'ONE_TO_ONE';
     if (chatType === 'group') {
-      console.log('Starting group chat with users: ', selectedUsers);
+        groupType = 'MANY_TO_MANY';
+        console.log('Starting group chat with title:', groupTitle, 'and users:', selectedUsers);
     } else if (chatType === 'one-to-one') {
-      console.log('Starting one-to-one chat with user: ', selectedUsers[0]);
+        console.log('Starting one-to-one chat with user:', selectedUsers[0]);
     }
+
+    // make request to create a new group
+    const group = await createNewGroup(groupType == 'MANY_TO_MANY' ? groupTitle : 'ONE_TO_ONE', null, groupType, selectedUsers, me.id);
+
+    // add group to store
+    dispatch(addGroup({group: group}));
+
+    // subscribe to this group 
     handleClose();
   };
 
@@ -49,28 +83,42 @@ const ChatPopup = ({ users }: { users: { id: number, username: string }[] }) => 
           </FormControl>
 
           {chatType === 'group' && (
-            <FormControl fullWidth style={{ marginTop: 20 }}>
-              <InputLabel>Select Multiple Users</InputLabel>
-              <Select
-                multiple
-                value={selectedUsers}
-                onChange={handleUserSelection}
-                renderValue={(selected: number[]) => selected.map(id => users.find(user => user.id === id)?.username).join(', ')}
-              >
-                {users.map((user) => (
-                  <MenuItem key={user.id} value={user.id}>
-                    <Checkbox checked={selectedUsers.indexOf(user.id) > -1} />
-                    <ListItemText primary={user.username} />
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <>
+              <TextField
+                label="Group Title"
+                fullWidth
+                style={{ marginTop: 20 }}
+                value={groupTitle}
+                onChange={(e) => setGroupTitle(e.target.value)}
+              />
+              <FormControl fullWidth style={{ marginTop: 20 }}>
+                <InputLabel>Select Multiple Users</InputLabel>
+                <Select
+                  multiple
+                  value={selectedUsers}
+                  onChange={handleUserSelection}
+                  renderValue={(selected: number[]) =>
+                    selected.map((id) => users.find((user) => user.id === id)?.username).join(', ')
+                  }
+                >
+                  {users.map((user) => (
+                    <MenuItem key={user.id} value={user.id}>
+                      <Checkbox checked={selectedUsers.indexOf(user.id) > -1} />
+                      <ListItemText primary={user.username} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </>
           )}
 
           {chatType === 'one-to-one' && (
             <FormControl fullWidth style={{ marginTop: 20 }}>
               <InputLabel>Select a User</InputLabel>
-              <Select value={selectedUsers[0] || ''} onChange={handleUserSelection}>
+              <Select
+                value={selectedUsers[0] || ''}
+                onChange={handleUserSelection}
+              >
                 {users.map((user) => (
                   <MenuItem key={user.id} value={user.id}>
                     {user.username}
@@ -81,8 +129,18 @@ const ChatPopup = ({ users }: { users: { id: number, username: string }[] }) => 
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="secondary">Cancel</Button>
-          <Button onClick={handleStartChat} color="primary" disabled={chatType === '' || (chatType === 'group' && selectedUsers.length === 0)}>
+          <Button onClick={handleClose} color="secondary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleStartChat}
+            color="primary"
+            disabled={
+              chatType === '' ||
+              (chatType === 'group' && (selectedUsers.length === 0 || groupTitle === '')) ||
+              (chatType === 'one-to-one' && selectedUsers.length === 0)
+            }
+          >
             Start Chat
           </Button>
         </DialogActions>

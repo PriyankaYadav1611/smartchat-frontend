@@ -34,30 +34,37 @@ export default function Chat() {
     const [content, setContent] = useState('');
 
 
-
+    useEffect(() => {
+        console.log("new groups:", groups);
+    }, [groups]);
 
 
     useEffect(() => {
-        console.log("Chat page useeffect called ..................");
-        if (getMeError) {
-            router.push('/login');
-        } else if (!me) {
-            // User is not authenticated
-            // check if token is present in localStorage
-            const localToken = localStorage.getItem("token");
-            if (!localToken) {
-                // token is not present
-                // send to login page
-                router.push("/login");
-            }
-            // token is present, check token validity
-            dispatch(getAndSetMe());
+        console.log("getAndSetMe useEffect called ..................");
+        // User is not authenticated
+        // check if token is present in localStorage
+        const localToken = localStorage.getItem("token");
+        if (!localToken) {
+            // token is not present
+            // send to login page
+            router.push("/login");
         }
-    }, [dispatch, me]);
+        // token is present, check token validity
+        dispatch(getAndSetMe());
+    }, []);
+
+    // In case of getMe failure
+    useEffect(() => {
+        if (getMeError) {
+            console.log('Get me err:', getMeError);
+            localStorage.removeItem('token');
+            router.push('/login');
+        }
+    }, [getMeError]);
 
 
     useEffect(() => {
-        if (me) {
+        if (!getMeError && me) {
             // get and set all groups for this user and all group's all messages
             getAndSetAllRelevantGroups();
 
