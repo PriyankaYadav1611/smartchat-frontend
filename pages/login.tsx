@@ -14,13 +14,20 @@ export default function Login() {
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const response = await fetch('http://localhost:8080/api/users/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password }),
-        });
+        let response;
+        try {
+            response = await fetch('http://localhost:8080/api/users/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            });
+        } catch (error) {
+            console.log("Your internet seems not connected");
+            alert('Please check if you are connected to internet!');
+            return;
+        }
 
         if (response.ok) {
             const data = await response.json();
@@ -31,7 +38,7 @@ export default function Login() {
 
             router.push('/chat');
         } else {
-            alert('Login failed');
+            alert('Please enter correct username and password!');
         }
     };
 
