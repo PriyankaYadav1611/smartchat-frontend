@@ -10,7 +10,7 @@ const groupSlice = createSlice({
     reducers: {
         setGroups: (state, action) => {
             state.groups = action.payload.groups;
-            console.log("groupSlice groupsdispatch.. ", action.payload.groups);
+            console.log("groupSlice setGroups.. ", action.payload.groups);
         },
         addGroup: (state, action) => {
             state.groups = [...state.groups, action.payload.group];
@@ -18,7 +18,7 @@ const groupSlice = createSlice({
         },
         setSelectedGroup: (state, action) => {
             state.selectedGroup = action.payload.selectedGroup;
-            console.log("groupSlice groupsdispatch.. ", action.payload.selectedGroup);
+            console.log("groupSlice setSelectedGroup.. ", action.payload.selectedGroup);
         }
     }
 });

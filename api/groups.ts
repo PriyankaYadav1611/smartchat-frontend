@@ -19,11 +19,8 @@ export async function getAllRelevantGroups() {
     }
 }
 
-export async function createNewGroup(title, description, type, groupMembers, myId) {
+export async function createNewGroup(title, description, type, groupMembers) {
     const localToken = localStorage.getItem('token');
-    if (!groupMembers.find((id) => id == myId)) {
-        groupMembers.push(myId);
-    }
 
     let data = {};
     if (title) {
@@ -47,6 +44,7 @@ export async function createNewGroup(title, description, type, groupMembers, myI
             url: `${BASE_URL}/api/groups`,
             headers: {
                 'Authorization': 'Bearer ' + localToken,
+                'Content-Type': 'application/json',
             },
             data: data,
         });

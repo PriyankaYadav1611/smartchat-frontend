@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation'
 import { setSocket, clearSocket } from '../store/websocketSlice';
-import { setToken } from '../store/authSlice';
 import { getAndSetMe } from '../store/meSlice';
 import { setGroups, setSelectedGroup } from '@/store/groupSlice';
 import { setUsersAndIdUserMap } from '../store/usersSlice';
@@ -34,9 +33,9 @@ export default function Chat() {
     const [content, setContent] = useState('');
 
 
-    useEffect(() => {
-        console.log("new groups:", groups);
-    }, [groups]);
+    // useEffect(() => {
+    //     console.log("new groups:", groups);
+    // }, [groups]);
 
 
     useEffect(() => {
@@ -81,6 +80,7 @@ export default function Chat() {
         console.log("Going to subscribe all groups")
         if (me?.username && stompClient && groups) {
             console.log("Inside if: Going to subscribe all groups");
+            // TODO: currently, if you add only one group, all groups will be subscribed again,
             groups.forEach(group => {
                 stompClient.subscribe(`/user/${"groupId-" + group.id}/queue/messages/groups`, (message) => {
                     console.log("got msg..", JSON.parse(message.body));
@@ -192,18 +192,18 @@ export default function Chat() {
             <div className={styles.container}>
                 <div className={styles.sidebar}>
                     <h2>Chat App</h2>
-                    {users ? <ChatPopup users={users} /> : ""}
+                    {users && groups ? <ChatPopup allUsers={users} /> : ""}
                     <ul>
                         {groups.map((group) => (
                             <li
                                 key={group.id}
                                 onClick={() => handleGroupClick(group)}
-                                className={groups?.id === group.id ? styles.active : ''}
+                                className={selectedGroup?.id === group.id ? styles.active : ''}
                             >
                                 {   group.type === "MANY_TO_MANY" ? 
                                         group.title :
                                         (group.groupMembers ?
-                                            (group.groupMembers[0]==me.id ? idUserMap[group.groupMembers[1]].username : idUserMap[group.groupMembers[0]].username) :
+                                            (group.groupMembers[0]==me.id ? (group.groupMembers[1] && idUserMap[group.groupMembers[1]].username) : idUserMap[group.groupMembers[0]].username) :
                                             group.title
                                         )
                                 }

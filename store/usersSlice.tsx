@@ -19,6 +19,7 @@ const usersSlice = createSlice({
         setUsersAndIdUserMap: (state, action) => {
             state.idUserMap = action.payload.idUserMap;
             state.users = action.payload.users;
+            console.log("usersSlice setUsersAndIdUserMap:", action.payload.idUserMap)
         }
     }
 });
