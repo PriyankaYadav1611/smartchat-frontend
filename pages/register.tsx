@@ -1,13 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
+import { API_BASE_URL } from '../config/constants'
+
+
 export default function Register() {
+  const router = useRouter();
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
+
+  useEffect(() => {
+    localStorage.removeItem('token');
+  }, []);
+
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const response = await fetch('http://localhost:8080/api/users/auth/register', {
+    const response = await fetch(`${API_BASE_URL}/api/users/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -20,6 +30,8 @@ export default function Register() {
       const data = await response.json();
       console.log("Register successful..!");
       console.log("Got Data: ", data);
+      router.push("/login");
+
     } else {
       alert('Register failed');
     }

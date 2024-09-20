@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux';
 
 import { setToken } from '../store/authSlice';
+import { API_BASE_URL } from '../config/constants'
 
 
 export default function Login() {
@@ -25,7 +26,7 @@ export default function Login() {
         e.preventDefault();
         let response;
         try {
-            response = await fetch('http://localhost:8080/api/users/auth/login', {
+            response = await fetch(`${API_BASE_URL}/api/users/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

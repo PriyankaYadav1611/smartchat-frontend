@@ -1,13 +1,16 @@
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
 
+import { API_BASE_URL } from '../config/constants'
+
+
 // Function to initialize the STOMP connection
 export const connectStomp = (onMessageReceived, onConnected, onError) => {
 
-    const socket = new SockJS('http://localhost:8080/ws');
+    const socket = new SockJS(`${API_BASE_URL}/ws`);
 
     const stompClient = Stomp.over(() => {
-        return new SockJS('http://localhost:8080/ws')
+        return new SockJS(`${API_BASE_URL}/ws`)
     });
 
     stompClient.connect({ Authorization: `Bearer ${localStorage.getItem("token")}` }, (frame) => {

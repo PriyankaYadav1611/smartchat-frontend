@@ -1,5 +1,6 @@
 import axios from 'axios';
-import {BASE_URL} from './constants';
+
+import { API_BASE_URL } from '../config/constants'
 
 
 export async function getMe() {
@@ -7,7 +8,7 @@ export async function getMe() {
     try {
         const response = await axios({
             method: 'get',
-            url: `${BASE_URL}/api/users/me`,
+            url: `${API_BASE_URL}/api/users/me`,
             headers: {
                 'Authorization': 'Bearer ' + localToken,
             },
@@ -31,7 +32,7 @@ export async function getAllReleventUsers() {
     try {
         const response = await axios({
             method: 'get',
-            url: `${BASE_URL}/api/groups/users`,
+            url: `${API_BASE_URL}/api/groups/users`,
             headers: {
                 'Authorization': 'Bearer ' + localToken,
             },
@@ -50,7 +51,7 @@ export async function getAllUsers() {
     try {
         const response = await axios({
             method: 'get',
-            url: `${BASE_URL}/api/users`,
+            url: `${API_BASE_URL}/api/users`,
             headers: {
                 'Authorization': 'Bearer ' + localToken,
             },

@@ -1,5 +1,6 @@
 import axios from 'axios';
-import {BASE_URL} from './constants';
+
+import { API_BASE_URL } from '../config/constants'
 
 
 export async function getAllRelevantGroups() {
@@ -7,7 +8,7 @@ export async function getAllRelevantGroups() {
     try {
         const response = await axios({
             method: 'get',
-            url: `${BASE_URL}/api/users/groups`,
+            url: `${API_BASE_URL}/api/users/groups`,
             headers: {
                 'Authorization': 'Bearer ' + localToken,
             },
@@ -41,7 +42,7 @@ export async function createNewGroup(title, description, type, groupMembers) {
     try {
         const response = await axios({
             method: 'post',
-            url: `${BASE_URL}/api/groups`,
+            url: `${API_BASE_URL}/api/groups`,
             headers: {
                 'Authorization': 'Bearer ' + localToken,
                 'Content-Type': 'application/json',

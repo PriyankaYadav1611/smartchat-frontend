@@ -48,6 +48,7 @@ export default function Chat() {
             // send to login page
             router.push("/login");
         }
+        console.log("NEXT_PUBLIC_BASE_API_URL:", process.env.NEXT_PUBLIC_BASE_API_URL);
         // token is present, check token validity
         dispatch(getAndSetMe());
     }, []);
@@ -179,7 +180,7 @@ export default function Chat() {
     const sortedMessages = selectedGroup?.id && groupIdMessagesMap[selectedGroup.id] ? groupIdMessagesMap[selectedGroup.id].slice().sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime()) : [];
     
     
-    if (!me || isGettingMe || !users || (!(groups?.length)) || !idUserMap) {
+    if (!me || isGettingMe) {
         return (
             <div>
                 Loading...
@@ -203,7 +204,7 @@ export default function Chat() {
                                 {   group.type === "MANY_TO_MANY" ? 
                                         group.title :
                                         (group.groupMembers && group.groupMembers[0]?
-                                            (group.groupMembers[0]==me.id ? (group.groupMembers[1] && idUserMap[group.groupMembers[1]].username) : idUserMap[group.groupMembers[0]].username) :
+                                            (group.groupMembers[0]==me.id ? (group.groupMembers[1] && idUserMap && idUserMap[group.groupMembers[1]].username) : idUserMap && idUserMap[group.groupMembers[0]].username) :
                                             group.title
                                         )
                                 }

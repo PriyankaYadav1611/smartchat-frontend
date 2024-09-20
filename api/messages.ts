@@ -1,5 +1,6 @@
 import axios from 'axios';
-import {BASE_URL} from './constants';
+
+import { API_BASE_URL } from '../config/constants'
 
 
 export async function getMessagesByGroupId(groupId) {
@@ -10,7 +11,7 @@ export async function getMessagesByGroupId(groupId) {
     try {
         const response = await axios({
             method: 'get',
-            url: `${BASE_URL}/api/groups/${groupId}/messages`,
+            url: `${API_BASE_URL}/api/groups/${groupId}/messages`,
             headers: {
                 'Authorization': 'Bearer ' + localToken,
             },
