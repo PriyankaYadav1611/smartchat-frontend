@@ -202,7 +202,7 @@ export default function Chat() {
                             >
                                 {   group.type === "MANY_TO_MANY" ? 
                                         group.title :
-                                        (group.groupMembers ?
+                                        (group.groupMembers && group.groupMembers[0]?
                                             (group.groupMembers[0]==me.id ? (group.groupMembers[1] && idUserMap[group.groupMembers[1]].username) : idUserMap[group.groupMembers[0]].username) :
                                             group.title
                                         )
@@ -222,7 +222,7 @@ export default function Chat() {
                                     selectedGroup.type === "MANY_TO_MANY" ? 
                                     selectedGroup.title :
                                         (selectedGroup.groupMembers ?
-                                            (selectedGroup.groupMembers[0]==me.id ? idUserMap[selectedGroup.groupMembers[1]].username : idUserMap[selectedGroup.groupMembers[0]].username) :
+                                            (selectedGroup.groupMembers[0]==me.id ? idUserMap[selectedGroup.groupMembers[1]]?.username : idUserMap[selectedGroup.groupMembers[0]].username) :
                                             selectedGroup.title
                                         )    
                                 }</h3>

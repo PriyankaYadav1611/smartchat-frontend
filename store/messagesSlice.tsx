@@ -18,7 +18,11 @@ const messagesSlice = createSlice({
             const message = action.payload.message;
             console.log("---------------------MessageSlice",message);
             const groupId = message.groupId;
-            state.groupIdMessagesMap[groupId] = [...state.groupIdMessagesMap[groupId], message];
+            let messages = [];
+            if (state.groupIdMessagesMap && state.groupIdMessagesMap[groupId]) {
+                messages = [...state.groupIdMessagesMap[groupId]];
+            }
+            state.groupIdMessagesMap[groupId] = [...messages, message];
             console.log("messagesSlice setMessage.. ", message);
         },
     }

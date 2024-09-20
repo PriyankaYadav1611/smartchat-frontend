@@ -104,7 +104,7 @@ const ChatPopup = ({ allUsers }: { allUsers: { id: number, username: string }[] 
       groupMembers = [selectedUser, me.id];
       console.log("groupMembers:", groupMembers);
     } else {
-      groupMembers = [...selectedUsers];
+      groupMembers = [...selectedUsers, me.id];
     }
     let group;
     try {
