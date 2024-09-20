@@ -11,6 +11,15 @@ export default function Login() {
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [isLocalTokenPresent, setIsLocalTokenPresent] = useState(true);
+
+    useEffect(()=>{
+        if (localStorage.getItem('token')) {
+            router.push("/chat");
+        } else {
+            setIsLocalTokenPresent(false);
+        }
+    }, [])
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -42,26 +51,28 @@ export default function Login() {
         }
     };
 
-    return (
-        <div>
-            <h2>SignIn</h2>
-            <form onSubmit={handleLogin}>
-                <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Username"
-                    required
-                />
-                <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Password"
-                    required
-                />
-                <button type="submit">SignIn</button>
-            </form>
-        </div>
-    );
+    if (!isLocalTokenPresent) {
+        return (
+            <div>
+                <h2>SignIn</h2>
+                <form onSubmit={handleLogin}>
+                    <input
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Username"
+                        required
+                    />
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Password"
+                        required
+                    />
+                    <button type="submit">SignIn</button>
+                </form>
+            </div>
+        );
+    }
 }

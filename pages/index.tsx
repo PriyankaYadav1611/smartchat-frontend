@@ -6,7 +6,10 @@ const inter = Inter({ subsets: ["latin"] });
 export default function Home() {
   return (
     <main>
-      <h1>Welcome to My SmartChate Next App</h1>
+      <h2>Welcome to My SmartChate Next App</h2>
+      <a href="/login">Login</a>
+      <br/>
+      <a href="/register">Signup</a>
     </main>
   );
 }
